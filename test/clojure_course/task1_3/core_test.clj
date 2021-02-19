@@ -4,19 +4,19 @@
 
 (deftest test-my-map
   (is
-    (=
-     (range 1 5)
-     (my-map (fn [x] (+ x 1)) (range 0 4))))
+   (=
+    (range 1 5)
+    (my-map inc (range 0 4))))
   (is
-    (=
-     `()
-     (my-map (fn [x] (+ x 1)) `()))))
+   (=
+    `()
+    (my-map inc `()))))
 
 (deftest test-my-filter
   (is
-    (=
-     `(0 0 0)
-     (my-filter (fn [x] x) `(0 nil 0 0 nil))))
+   (=
+    `(0 0 0)
+    (my-filter (fn [x] x) `(0 nil 0 0 nil))))
   (is
    (=
     `()
