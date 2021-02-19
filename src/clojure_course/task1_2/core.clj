@@ -28,7 +28,7 @@
                                 (dec length)
                                 (words-loop result alphabet)))))
 
-(defn task1-2
+(defn words-from-alphabet-by-tail-recur
   [alphabet word-length]
   {:pre [(>= word-length 0)]}
   (if (= word-length 0)

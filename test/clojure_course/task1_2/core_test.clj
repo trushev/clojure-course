@@ -2,17 +2,13 @@
   (:require [clojure.test :refer :all]
             [clojure-course.task1-2.core :refer :all]))
 
-(deftest test1
+(deftest test
   (is (=
        `("cb" "ca" "bc" "ba" "ac" "ab")
-       (task1-2 `("a" "b" "c") 2))))
-
-(deftest test2
+       (words-from-alphabet-by-tail-recur `("a" "b" "c") 2)))
   (is (=
        `("aba" "bab")
-       (task1-2 `("a" "b") 3))))
-
-(deftest test3
+       (words-from-alphabet-by-tail-recur `("a" "b") 3)))
   (is (=
        `()
-       (task1-2 `("a") 0))))
+       (words-from-alphabet-by-tail-recur `("a") 0))))
