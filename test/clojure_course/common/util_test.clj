@@ -1,4 +1,4 @@
-(ns clojure-course.common.core-test
+(ns clojure-course.common.util-test
   (:require [clojure.test :refer :all]))
 
 (defn to-set [a-list]

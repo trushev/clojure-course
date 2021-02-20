@@ -1,4 +1,4 @@
-(ns clojure-course.task1-3.core)
+(ns clojure-course.task1-3.map-filter)
 
 (defn my-map [f coll]
   (apply

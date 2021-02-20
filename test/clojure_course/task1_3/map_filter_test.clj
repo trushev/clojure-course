@@ -1,6 +1,6 @@
-(ns clojure-course.task1-3.core-test
+(ns clojure-course.task1-3.map-filter-test
   (:require [clojure.test :refer :all]
-            [clojure-course.task1-3.core :refer :all]))
+            [clojure-course.task1-3.map-filter :refer :all]))
 
 (deftest test-my-map
   (is

@@ -1,4 +1,4 @@
-(ns clojure-course.task1-4.core)
+(ns clojure-course.task1-4.reduce-wfa)
 
 (defn alphabet-loop
   ([word alphabet]
