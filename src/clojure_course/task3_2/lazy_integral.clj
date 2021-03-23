@@ -23,15 +23,12 @@
       (- x last-point))))
 
 (defn square-seq [f h]
-  (lazy-seq
-    (cons
-      (list (f-square f 0 h) 0)
-      (map
-        (fn [[square k]]
-          (list
-            (+ square (f-square f (inc k) h))
-            (inc k)))
-        (square-seq f h)))))
+  (iterate
+    (fn [[square k]]
+      (list
+        (+ square (f-square f (inc k) h))
+        (inc k)))
+    (list (f-square f 0 h) 0)))
 
 (defn integral [f x h ss]
   (+

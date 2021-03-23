@@ -4,14 +4,15 @@
 
 (defn foo-1 [_] 1)
 (defn foo-x [x] x)
-(defn bar [_] (Thread/sleep 0.5) 0)
+(defn bar [_] (Thread/sleep 0 1) 0)
 
 (deftest test-f-square
   (is (= 0.5 (f-square foo-x 0 1)))
   (is (= 1.5 (f-square foo-x 1 1))))
 
 (deftest test-operator-time
-  (let [prim (operator bar 0.2)]
+  (let [prim (operator bar 0.21324)]
+    (prim 1)
     (time (prim 20))
     (time (prim 20.33))
     (time (prim 40))
