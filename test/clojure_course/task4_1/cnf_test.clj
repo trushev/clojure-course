@@ -26,11 +26,31 @@
   (is (thrown? AssertionError (same-variable? incorrect incorrect))))
 
 (deftest test-and
-  (is (And? (And (variable :x) (variable :y)))))
+  (is (And? (And (variable :x) (variable :y))))
+  (is (thrown? AssertionError (And incorrect)))
+  (is (thrown? AssertionError (And? incorrect))))
+
+(deftest test-or
+  (is (Or? (Or (variable :x) (variable :y))))
+  (is (thrown? AssertionError (Or incorrect)))
+  (is (thrown? AssertionError (Or? incorrect))))
+
+(deftest test-not
+  (is (Not? (Not (variable :x))))
+  (is (thrown? AssertionError (Not incorrect)))
+  (is (thrown? AssertionError (Not? incorrect))))
+
+(deftest test-impl
+  (is (Impl? (Impl (variable :x) (variable :y))))
+  (is (thrown? AssertionError (Impl incorrect incorrect)))
+  (is (thrown? AssertionError (Impl? incorrect))))
 
 (deftest test-expression
   (is (not (expression? incorrect)))
   (is (expression? (constant true)))
   (is (expression? (constant false)))
   (is (expression? (variable :x)))
-  (is (expression? (And (variable :x) (variable :y)))))
+  (is (expression? (And (variable :x) (variable :y))))
+  (is (expression? (Or (variable :x) (variable :y))))
+  (is (expression? (Not (variable :x))))
+  (is (expression? (Impl (variable :x) (variable :x)))))

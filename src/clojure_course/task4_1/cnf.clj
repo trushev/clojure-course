@@ -63,3 +63,44 @@
   [expr]
   {:pre [(expression? expr)]}
   (= (first expr) ::and))
+
+(defn Or
+  "Creates a disjunction"
+  [expr & rest]
+  {:pre [(expression? expr)]}
+  (if (empty? rest)
+    expr
+    (cons ::or (cons expr rest))))
+
+(defn Or?
+  "Tests whether expr is a disjunction"
+  [expr]
+  {:pre [(expression? expr)]}
+  (= (first expr) ::or))
+
+(defn Not
+  "Creates a negation"
+  [expr]
+  {:pre [(expression? expr)]}
+  (list ::not expr))
+
+(defn Not?
+  "Tests whether expr is a negation"
+  [expr]
+  {:pre [(expression? expr)]}
+  (= (first expr) ::not))
+
+(defn Impl
+  "Creates a implication"
+  [expr-x expr-y]
+  {:pre [(expression? expr-x) (expression? expr-y)]}
+  (list ::impl expr-x expr-y))
+
+(defn Impl?
+  "Tests whether expr is a implication"
+  [expr]
+  {:pre [(expression? expr)]}
+  (= (first expr) ::impl))
+
+(defn -main []
+  (println (And (variable :x) (variable :y))))
