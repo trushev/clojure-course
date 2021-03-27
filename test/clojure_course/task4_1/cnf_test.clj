@@ -24,3 +24,13 @@
   (is (thrown? AssertionError (same-variable? (variable :x) incorrect)))
   (is (thrown? AssertionError (same-variable? incorrect (variable :x))))
   (is (thrown? AssertionError (same-variable? incorrect incorrect))))
+
+(deftest test-and
+  (is (And? (And (variable :x) (variable :y)))))
+
+(deftest test-expression
+  (is (not (expression? incorrect)))
+  (is (expression? (constant true)))
+  (is (expression? (constant false)))
+  (is (expression? (variable :x)))
+  (is (expression? (And (variable :x) (variable :y)))))
