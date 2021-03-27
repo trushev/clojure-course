@@ -87,18 +87,24 @@
   (is (thrown? AssertionError (cnf? incorrect))))
 
 (deftest test-expr-as-str
-  (is (= "true" (expr-as-str (const true))))
-  (is (= "x" (expr-as-str (variable :x))))
-  (is (= "!x" (expr-as-str (Not (variable :x)))))
-  (is (= "(x | !y)" (expr-as-str (Or (variable :x) (Not (variable :y))))))
-  (is (= "(x & !y & !(z | !w))" (expr-as-str (And (variable :x) (Not (variable :y)) (Not (Or (variable :z) (Not (variable :w))))))))
-  (is (= "(x -> y)" (expr-as-str (impl (variable :x) (variable :y)))))
-  (is (= "(x -> (y | z))" (expr-as-str (impl (variable :x) (Or (variable :y) (variable :z)))))))
+  (is (= "true" (expr-str (const true))))
+  (is (= "x" (expr-str (variable :x))))
+  (is (= "!x" (expr-str (Not (variable :x)))))
+  (is (= "(x | !y)" (expr-str (Or (variable :x) (Not (variable :y))))))
+  (is (= "(x & !y & !(z | !w))" (expr-str (And (variable :x) (Not (variable :y)) (Not (Or (variable :z) (Not (variable :w))))))))
+  (is (= "(x -> y)" (expr-str (impl (variable :x) (variable :y)))))
+  (is (= "(x -> (y | z))" (expr-str (impl (variable :x) (Or (variable :y) (variable :z)))))))
 
 (deftest test-impl-as-disj
-  (is (= "(!x | y)" (expr-as-str (impl-as-disj (impl (variable :x) (variable :y))))))
-  (-> (impl (variable :x) (variable :y))
-      impl-as-disj
-      expr-as-str
-      (= "(!x | y)")
-      is))
+  (is (= "(!x | y)" (expr-str (impl-as-disj (impl (variable :x) (variable :y))))))
+  (is (= "(!(x | !y) | (z & !w))" (expr-str (impl-as-disj (impl (Or (variable :x) (Not (variable :y))) (And (variable :z) (Not (variable :w))))))))
+  (is (thrown? AssertionError (impl-as-disj incorrect)))
+  (is (thrown? AssertionError (impl-as-disj (Or (variable :x) (variable :y))))))
+
+(deftest test-de-morgan-disj
+  (is (= "(!x & !y)" (expr-str (de-morgan-disj (Not (Or (variable :x) (variable :y)))))))
+  (is (thrown? AssertionError (de-morgan-disj incorrect))))
+
+(deftest test-de-morgan-conj
+  (is (= "(!x | !y)" (expr-str (de-morgan-conj (Not (And (variable :x) (variable :y)))))))
+  (is (thrown? AssertionError (de-morgan-conj incorrect))))

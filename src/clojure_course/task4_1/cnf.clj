@@ -152,7 +152,7 @@
       (And? expr)
       (every? elem-disj? (args expr)))))
 
-(defn expr-as-str
+(defn expr-str
   "Represents expr as a string"
   [expr]
   {:pre  [(expr? expr)]
@@ -160,18 +160,32 @@
   (cond
     (const? expr) (str (const-value expr))
     (variable? expr) (name (variable-name expr))
-    (Not? expr) (str "!" (expr-as-str (args expr)))
-    (Or? expr) (str "(" (clojure.string/join " | " (map #(expr-as-str %) (args expr))) ")")
-    (And? expr) (str "(" (clojure.string/join " & " (map #(expr-as-str %) (args expr))) ")")
-    (impl? expr) (str "(" (expr-as-str (first (args expr))) " -> " (expr-as-str (second (args expr))) ")")))
+    (Not? expr) (str "!" (expr-str (args expr)))
+    (Or? expr) (str "(" (clojure.string/join " | " (map #(expr-str %) (args expr))) ")")
+    (And? expr) (str "(" (clojure.string/join " & " (map #(expr-str %) (args expr))) ")")
+    (impl? expr) (str "(" (expr-str (first (args expr))) " -> " (expr-str (second (args expr))) ")")))
 
 (defn impl-as-disj
-  "Represents implication as disjunction (x -> y) = (!x or y)"
+  "Represents implication as disjunction: (x -> y) = (!x | y)"
   [expr]
   {:pre  [(impl? expr)]
    :post [(Or? %)]}
   (let [[x y] (args expr)]
     (Or (Not x) y)))
 
+(defn de-morgan-disj
+  "Represents negation of disjunction as conjunction of negations: !(x | y) = (!x & !y)"
+  [expr]
+  {:pre  [(Not? expr) (Or? (args expr))]
+   :post [(And? %)]}
+  (apply And (map #(Not %) (args (args expr)))))
+
+(defn de-morgan-conj
+  "Represents negation of conjunction as disjunction of negations: !(x & y) = (!x | !y)"
+  [expr]
+  {:pre  [(Not? expr) (And? (args expr))]
+   :post [(Or? %)]}
+  (apply Or (map #(Not %) (args (args expr)))))
+
 (defn -main []
-  (println (expr-as-str (impl-as-disj (impl (variable :x) (variable :y))))))
+  ())
