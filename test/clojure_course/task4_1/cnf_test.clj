@@ -4,14 +4,14 @@
 
 (def incorrect 0)
 
-(deftest test-constant
-  (is (constant? (constant true)))
-  (is (constant? (constant false)))
-  (is (= true (constant-value (constant true))))
-  (is (= false (constant-value (constant false))))
-  (is (thrown? AssertionError (constant incorrect)))
-  (is (thrown? AssertionError (constant? incorrect)))
-  (is (thrown? AssertionError (constant-value incorrect))))
+(deftest test-const
+  (is (const? (const true)))
+  (is (const? (const false)))
+  (is (= true (const-value (const true))))
+  (is (= false (const-value (const false))))
+  (is (thrown? AssertionError (const incorrect)))
+  (is (thrown? AssertionError (const? incorrect)))
+  (is (thrown? AssertionError (const-value incorrect))))
 
 (deftest test-variable
   (is (variable? (variable :x)))
@@ -41,16 +41,64 @@
   (is (thrown? AssertionError (Not? incorrect))))
 
 (deftest test-impl
-  (is (Impl? (Impl (variable :x) (variable :y))))
-  (is (thrown? AssertionError (Impl incorrect incorrect)))
-  (is (thrown? AssertionError (Impl? incorrect))))
+  (is (impl? (impl (variable :x) (variable :y))))
+  (is (thrown? AssertionError (impl incorrect incorrect)))
+  (is (thrown? AssertionError (impl? incorrect))))
 
-(deftest test-expression
-  (is (not (expression? incorrect)))
-  (is (expression? (constant true)))
-  (is (expression? (constant false)))
-  (is (expression? (variable :x)))
-  (is (expression? (And (variable :x) (variable :y))))
-  (is (expression? (Or (variable :x) (variable :y))))
-  (is (expression? (Not (variable :x))))
-  (is (expression? (Impl (variable :x) (variable :x)))))
+(deftest test-expr
+  (is (not (expr? incorrect)))
+  (is (expr? (const true)))
+  (is (expr? (const false)))
+  (is (expr? (variable :x)))
+  (is (expr? (And (variable :x) (variable :y))))
+  (is (expr? (Or (variable :x) (variable :y))))
+  (is (expr? (Not (variable :x))))
+  (is (expr? (impl (variable :x) (variable :x)))))
+
+(deftest test-literal
+  (is (literal? (variable :x)))
+  (is (literal? (Not (variable :x))))
+  (is (not (literal? (const true))))
+  (is (not (literal? (And (variable :x) (variable :y)))))
+  (is (not (literal? (Or (variable :x) (variable :y)))))
+  (is (not (literal? (impl (variable :x) (variable :y)))))
+  (is (thrown? AssertionError (literal? incorrect))))
+
+(deftest test-elem-disj
+  (is (elem-disj? (variable :x)))
+  (is (elem-disj? (Not (variable :x))))
+  (is (elem-disj? (Or (variable :x))))
+  (is (elem-disj? (Or (Not (variable :x)))))
+  (is (elem-disj? (Or (variable :x) (Not (variable :y)) (variable :z))))
+  (is (not (elem-disj? (Or (And (variable :x) (Not (variable :y))) (variable :z)))))
+  (is (not (elem-disj? (And (variable :x) (variable :y)))))
+  (is (not (elem-disj? (impl (variable :x) (variable :y)))))
+  (is (thrown? AssertionError (elem-disj? incorrect))))
+
+(deftest test-cnf
+  (is (cnf? (variable :x)))
+  (is (cnf? (Not (variable :x))))
+  (is (cnf? (And (variable :x) (Not (variable :y)) (variable :z))))
+  (is (cnf? (Or (variable :x) (Not (variable :y)) (variable :z))))
+  (is (cnf? (And (Or (variable :x) (variable :y)) (Or (variable :z) (variable :w))))) ; (x | y) & (z | w)
+  (is (cnf? (And (variable :x) (Not (variable :y)) (Or (variable :z) (Not (variable :w)))))) ; x & !y & (z | !w)
+  (is (not (cnf? (Or (variable :x) (And (variable :y) (variable :z)))))) ; x | (y & z)
+  (is (not (cnf? (impl (variable :x) (variable :y)))))
+  (is (thrown? AssertionError (cnf? incorrect))))
+
+(deftest test-expr-as-str
+  (is (= "true" (expr-as-str (const true))))
+  (is (= "x" (expr-as-str (variable :x))))
+  (is (= "!x" (expr-as-str (Not (variable :x)))))
+  (is (= "(x | !y)" (expr-as-str (Or (variable :x) (Not (variable :y))))))
+  (is (= "(x & !y & !(z | !w))" (expr-as-str (And (variable :x) (Not (variable :y)) (Not (Or (variable :z) (Not (variable :w))))))))
+  (is (= "(x -> y)" (expr-as-str (impl (variable :x) (variable :y)))))
+  (is (= "(x -> (y | z))" (expr-as-str (impl (variable :x) (Or (variable :y) (variable :z)))))))
+
+(deftest test-impl-as-disj
+  (is (= "(!x | y)" (expr-as-str (impl-as-disj (impl (variable :x) (variable :y))))))
+  (-> (impl (variable :x) (variable :y))
+      impl-as-disj
+      expr-as-str
+      (= "(!x | y)")
+      is))
