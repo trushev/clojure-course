@@ -108,3 +108,9 @@
 (deftest test-de-morgan-conj
   (is (= "(!x | !y)" (expr-str (de-morgan-conj (Not (And (variable :x) (variable :y)))))))
   (is (thrown? AssertionError (de-morgan-conj incorrect))))
+
+(deftest test-associative-disj-law
+  (is (= "(x | y | (z & w) | v | (m -> n))" (expr-str (associative-disj-law (Or (Or (variable :x) (variable :y) (And (variable :z) (variable :w))) (variable :v) (impl (variable :m) (variable :n))))))))
+
+(deftest test-associative-conj-law
+  (is (= "(x & y & (z | w) & v & (m -> n))" (expr-str (associative-conj-law (And (And (variable :x) (variable :y) (Or (variable :z) (variable :w))) (variable :v) (impl (variable :m) (variable :n))))))))

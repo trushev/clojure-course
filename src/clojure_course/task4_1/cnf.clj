@@ -187,5 +187,31 @@
    :post [(Or? %)]}
   (apply Or (map #(Not %) (args (args expr)))))
 
+(defn flatten-by-pred
+  [pred expr]
+  {:pre [(or
+           (= pred Or?)
+           (= pred And?))
+         (expr? expr)]}
+  (if (pred expr)
+    (mapcat #(flatten-by-pred pred %) (args expr))
+    (list expr)))
+
+(defn associative-disj-law
+  "Allows removal of brackets from disjunction: (x | (y | z)) = (x | y | z)"
+  [expr]
+  {:pre  [(Or? expr)]
+   :post [(Or? %)]}
+  (apply Or (flatten-by-pred Or? expr)))
+
+(defn associative-conj-law
+  "Allows removal of brackets from conjunction: (x & (y & z)) = (x & y & z)"
+  [expr]
+  {:pre  [(And? expr)]
+   :post [(And? %)]}
+  (apply And (flatten-by-pred And? expr)))
+
+
 (defn -main []
-  ())
+  (let [expr (Or (Or (variable :x) (variable :y) (And (variable :z) (variable :w))) (variable :v) (impl (variable :m) (variable :n)))]
+    (println (expr-str (associative-disj-law expr)))))
