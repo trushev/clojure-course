@@ -13,18 +13,6 @@
   (is (thrown? AssertionError (const? incorrect)))
   (is (thrown? AssertionError (const-value incorrect))))
 
-(deftest test-variable
-  (is (variable? (variable :x)))
-  (is (= :x (variable-name (variable :x))))
-  (is (same-variable? (variable :x) (variable :x)))
-  (is (not (same-variable? (variable :x) (variable :y))))
-  (is (thrown? AssertionError (variable incorrect)))
-  (is (thrown? AssertionError (variable? incorrect)))
-  (is (thrown? AssertionError (variable-name incorrect)))
-  (is (thrown? AssertionError (same-variable? (variable :x) incorrect)))
-  (is (thrown? AssertionError (same-variable? incorrect (variable :x))))
-  (is (thrown? AssertionError (same-variable? incorrect incorrect))))
-
 (deftest test-and
   (is (And? (And (variable :x) (variable :y))))
   (is (thrown? AssertionError (And incorrect)))
@@ -117,7 +105,6 @@
   (is (not (contains-const? (Or (const false) (variable :z)) (const true))))
   (is (contains-const? (impl (const false) (impl (And (variable :x) (variable :y)) (Or (variable :z) (variable :w)))) (const false)))
   (is (not (contains-const? (impl (const false) (impl (And (variable :x) (variable :y)) (Or (variable :z) (variable :w)))) (const true))))
-
   (is (thrown? AssertionError (contains-const? incorrect))))
 
 (deftest test-cnf
@@ -214,7 +201,11 @@
   (is (cnf? (cnf (And (variable :x) (variable :y)))))
   (is (cnf? (cnf (Or (variable :x) (And (variable :z) (variable :m))))))
   (is (cnf? (cnf (Or (And (variable :x) (variable :y)) (And (variable :z) (variable :m))))))
-  (is (cnf? (cnf (Not (impl (Not (const false)) (impl (And (variable :x) (variable :y)) (Or (variable :z) (variable :w)))))))))
+  (is (cnf? (cnf (Not (impl (Not (const false)) (impl (And (variable :x) (variable :y)) (Or (variable :z) (variable :w))))))))
+  (is (= "(x | y | z)" (expr-str (cnf (Or (variable :x) (variable :y) (Or (variable :x) (variable :z)))))))
+  (is (= "(x | y)" (expr-str (cnf (Or (variable :x) (variable :y) (variable :x))))))
+  ;(is (= "true" (expr-str (cnf (Or (variable :x) (Not (variable :x)))))))
+  )
 
 (deftest test-assign
   (is (= "y" (expr-str (assign (And (variable :x) (variable :y)) (variable :x) (const true)))))

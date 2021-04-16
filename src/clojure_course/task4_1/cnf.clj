@@ -453,40 +453,35 @@
   {:pre  [(expr? expr)]
    :post [(expr? %)]}
   (cond
-    (atom? expr) expr
-    (not (contains-const? expr)) expr
-    (Or? expr) (let [consts (map const-value (filter const? (args expr)))]
-                 (if (empty? consts)
-                   ()
-                   (if (some? (some identity consts))
-                     (const true)
-                     (if (empty? (filter #(not (const? %)) (args expr)))
-                       (const false)
-                       (Or (filter #(not (const? %)) (args expr)))))))
-    (Not? expr) (identity (args expr))
-
-    ))
-
-(defn identity-law
-  [expr]
-  {:pre  [(expr? expr)]
-   :post [(expr? %)]}
-  (cond
     (and (And? expr) (contains-const? expr (const false))) (const false)
     (and (Or? expr) (contains-const? expr (const true))) (const true)
     (and (And? expr) (contains-const? expr (const true))) (apply And (filter #(not (= % (const true))) (args expr)))
     (and (Or? expr) (contains-const? expr (const false))) (apply Or (filter #(not (= % (const false))) (args expr)))
     :else expr))
 
+(defn idempotent-disj-law
+  "(x | y | x) = (x | y)"
+  [expr]
+  {:pre  [(Or? expr)]
+   :post [(Or? %)]}
+  (apply Or (distinct (args expr))))
+
+(defn idempotent-conj-law
+  "(x & y & x) = (x & y)"
+  [expr]
+  {:pre  [(And? expr)]
+   :post [(And? %)]}
+  (apply And (distinct (args expr))))
+
 (def cnf-rules
   (list
     [not-nnf? #(cnf (nnf %))]
     [atom? identity]
     [contains-const? #(cnf (identity-law %))]
-    [elem-disj? identity]
-    [elem-conj? identity]
-    [assoc-disj? #(cnf (assoc-disj-law %))]
-    [assoc-conj? #(cnf (assoc-conj-law %))]
+    [elem-disj? idempotent-disj-law]
+    [elem-conj? idempotent-conj-law]
+    [assoc-disj? #(cnf (idempotent-disj-law (assoc-disj-law %)))]
+    [assoc-conj? #(cnf (idempotent-conj-law (assoc-conj-law %)))]
     [distributive?
      #(assoc-conj-law
         (apply-and
@@ -523,61 +518,3 @@
   {:pre  [(expr? expr) (variable? var) (const? val)]
    :post [(expr? %)]}
   (cnf (recursive-assign expr var val)))
-
-
-
-
-
-
-
-
-
-
-
-
-; redundant
-
-(defn -main [])
-
-(defn same-variable?
-  "Tests whether var1 and var2 are the same"
-  [var1 var2]
-  {:pre  [(expr? var1) (expr? var2)]
-   :post [(boolean? %)]}
-  (= (variable-name var1) (variable-name var2)))
-
-(defn idempotent-disj-law
-  "(x | y | x) = (x | y)"
-  [expr]
-  {:pre  [(Or? expr)]
-   :post [(Or? %)]}
-  (apply Or (distinct (args expr))))
-
-(defn idempotent-conj-law
-  "(x & y & x) = (x & y)"
-  [expr]
-  {:pre  [(And? expr)]
-   :post [(And? %)]}
-  (apply And (distinct (args expr))))
-
-(defn identity-conj-law
-  "(true & x) = x, (false & x) = false"
-  [expr]
-  {:pre  [(And? expr)]
-   :post [(expr? %)]}
-  (let [c (const-value (first (args expr)))
-        e (rest (args expr))]
-    (if c
-      (apply And e)
-      (const c))))
-
-(defn identity-disj-law
-  "(true | x) = true, (false | x) = x"
-  [expr]
-  {:pre  [(Or? expr)]
-   :post [(expr? %)]}
-  (let [c (const-value (first (args expr)))
-        e (rest (args expr))]
-    (if c
-      (const c)
-      (apply Or e))))
