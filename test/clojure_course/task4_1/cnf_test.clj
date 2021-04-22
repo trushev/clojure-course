@@ -204,8 +204,8 @@
   (is (cnf? (cnf (Not (impl (Not (const false)) (impl (And (variable :x) (variable :y)) (Or (variable :z) (variable :w))))))))
   (is (= "(x | y | z)" (expr-str (cnf (Or (variable :x) (variable :y) (Or (variable :x) (variable :z)))))))
   (is (= "(x | y)" (expr-str (cnf (Or (variable :x) (variable :y) (variable :x))))))
-  ;(is (= "true" (expr-str (cnf (Or (variable :x) (Not (variable :x)))))))
-  )
+  (is (= "true" (expr-str (cnf (Or (variable :x) (Not (variable :x)))))))
+  (is (= "false" (expr-str (cnf (And (variable :x) (Not (variable :x))))))))
 
 (deftest test-assign
   (is (= "y" (expr-str (assign (And (variable :x) (variable :y)) (variable :x) (const true)))))
@@ -213,3 +213,13 @@
   (is (= "true" (expr-str (assign (Or (Not (variable :x)) (Not (variable :y))) (variable :x) (const false)))))
   (is (= "(x & y & !r & !w)" (expr-str (assign (Not (impl (Not (const false)) (impl (And (variable :x) (variable :y)) (Or (And (variable :z) (variable :r)) (variable :w))))) (variable :z) (const true)))))
   (is (= "(x & y & !w)" (expr-str (assign (Not (impl (Not (const false)) (impl (And (variable :x) (variable :y)) (Or (And (variable :z) (variable :r)) (variable :w))))) (variable :z) (const false))))))
+
+(deftest test-complement-conj-law
+  (is (= "false" (expr-str (complement-conj-law (And (variable :x) (Not (variable :x)))))))
+  (is (= "(x & !y)" (expr-str (complement-conj-law (And (variable :x) (Not (variable :y)))))))
+  (is (= "(x & y)" (expr-str (complement-conj-law (And (variable :x) (variable :y)))))))
+
+(deftest test-complement-disj-law
+  (is (= "true" (expr-str (complement-disj-law (Or (variable :x) (Not (variable :x)))))))
+  (is (= "(x | !y)" (expr-str (complement-disj-law (Or (variable :x) (Not (variable :y)))))))
+  (is (= "(x | y)" (expr-str (complement-disj-law (Or (variable :x) (variable :y)))))))

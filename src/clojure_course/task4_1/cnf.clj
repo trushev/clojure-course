@@ -139,7 +139,7 @@
    :post [(boolean? %)]}
   (not (atom? expr)))
 
-(defn elementary?
+(defn- elementary?
   [expr pred]
   {:pre  [(expr? expr)]
    :post [(boolean? %)]}
@@ -216,7 +216,7 @@
    :post [(boolean? %)]}
   (not (nnf? expr)))
 
-(defn type-and-inner-type?
+(defn- type-and-inner-type?
   [expr outer-type inner-type]
   {:pre  [(expr? expr)]
    :post [(boolean? %)]}
@@ -255,7 +255,7 @@
     (And? expr) (str "(" (clojure.string/join " & " (map #(expr-str %) (args expr))) ")")
     (impl? expr) (str "(" (expr-str (first (args expr))) " -> " (expr-str (second (args expr))) ")")))
 
-(defn flatten-by-pred
+(defn- flatten-by-pred
   [pred expr]
   {:pre [(or
            (= pred Or?)
@@ -286,7 +286,7 @@
    :post [(boolean? %)]}
   (not (And? expr)))
 
-(defn distr-pairs
+(defn- distr-pairs
   [expr]
   {:pre [(Or? expr)]}
   (let [args-part1 (take-while not-and? (args expr))
@@ -296,7 +296,7 @@
           args-or (concat args-part1 (rest args-part2))]
       [args-or args-and])))
 
-(defn apply-rules
+(defn- apply-rules
   [expr rules]
   {:pre  [(expr? expr) (list? rules)]
    :post [(expr? %)]}
@@ -307,8 +307,6 @@
               (second rule)
               false))
           rules)]
-    ;(println (str "Applying: " chosen-rule))
-    ;(println (str " to " expr))
     (chosen-rule expr)))
 
 (declare impless)
@@ -473,13 +471,37 @@
    :post [(And? %)]}
   (apply And (distinct (args expr))))
 
+(defn- complement-law
+  [expr const-val]
+  {:pre  [(expr? expr) (boolean? const-val)]
+   :post [(expr? %)]}
+  (let [positives (filter variable? (args expr))
+        negatives (set (map args (filter Not? (args expr))))]
+    (if (some? (some #(contains? negatives %) positives))
+      (const const-val)
+      expr)))
+
+(defn complement-conj-law
+  "x & !x = false"
+  [expr]
+  {:pre  [(And? expr)]
+   :post [(expr? %)]}
+  (complement-law expr false))
+
+(defn complement-disj-law
+  "x | !x = true"
+  [expr]
+  {:pre  [(Or? expr)]
+   :post [(expr? %)]}
+  (complement-law expr true))
+
 (def cnf-rules
   (list
     [not-nnf? #(cnf (nnf %))]
     [atom? identity]
     [contains-const? #(cnf (identity-law %))]
-    [elem-disj? idempotent-disj-law]
-    [elem-conj? idempotent-conj-law]
+    [elem-disj? #(complement-disj-law (idempotent-disj-law %))]
+    [elem-conj? #(complement-conj-law (idempotent-conj-law %))]
     [assoc-disj? #(cnf (idempotent-disj-law (assoc-disj-law %)))]
     [assoc-conj? #(cnf (idempotent-conj-law (assoc-conj-law %)))]
     [distributive?
@@ -499,7 +521,7 @@
       (cnf res)
       res)))
 
-(defn recursive-assign
+(defn- recursive-assign
   "Assigns const value to variable in expr"
   [expr var val]
   {:pre  [(expr? expr) (variable? var) (const? val)]
