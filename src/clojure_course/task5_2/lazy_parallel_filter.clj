@@ -1,4 +1,4 @@
-(ns clojure-course.task5-1.parallel-filter)
+(ns clojure-course.task5-2.lazy-parallel-filter)
 
 (def parallelism 4)
 
@@ -18,7 +18,7 @@
     (/ (count coll) block-count)
     (list)))
 
-(defn pfilter
+(defn- pfilter
   ([pred coll] (pfilter pred coll parallelism))
   ([pred coll par]
    (apply
@@ -30,5 +30,22 @@
            #(future (doall (filter pred %)))
            (blocks coll par)))))))
 
-(defn -main []
-  (println (blocks (list 1 2 3 4 5 6 7 8 9 10) parallelism)))
+(defn- chunks
+  [coll chunk-size]
+  (take-while
+    #(not (empty? %))
+    (map
+      #(take chunk-size %)
+      (iterate
+        #(drop chunk-size %)
+        coll))))
+
+(def block-size 100)
+
+(defn lazy-pfilter
+  ([pred coll] (lazy-pfilter pred coll parallelism block-size))
+  ([pred coll par] (lazy-pfilter pred coll par block-size))
+  ([pred coll par bsize]
+   (mapcat
+     #(pfilter pred % par)
+     (chunks coll (* par bsize)))))
