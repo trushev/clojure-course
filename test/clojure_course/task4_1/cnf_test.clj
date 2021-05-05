@@ -223,3 +223,15 @@
   (is (= "true" (expr-str (complement-disj-law (Or (variable :x) (Not (variable :x)))))))
   (is (= "(x | !y)" (expr-str (complement-disj-law (Or (variable :x) (Not (variable :y)))))))
   (is (= "(x | y)" (expr-str (complement-disj-law (Or (variable :x) (variable :y)))))))
+
+(deftest tt
+  (println
+    (extract_predicate
+      (Or (And (variable :x) (variable :z)) (variable :y))
+      (list (variable :x) (variable :y))))
+  (println
+    (extract_predicate
+      (Or (variable :x) (variable :y))
+      (list (variable :x) (variable :y))))
+
+  )

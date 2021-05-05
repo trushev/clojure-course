@@ -540,3 +540,25 @@
   {:pre  [(expr? expr) (variable? var) (const? val)]
    :post [(expr? %)]}
   (cnf (recursive-assign expr var val)))
+
+(defn in_attributes?
+  [expr attributes]
+  (let [attrs (set attributes)]
+    (cond
+      (Not? expr) (contains? attrs (args expr))
+      (variable? expr) (contains? attrs expr)
+      )))
+
+(defn not-nil?
+  [expr]
+  (not (nil? expr)))
+
+(defn extract_predicate
+  [expr attributes]
+  (cond
+    (And? expr) (apply And (filter not-nil? (map #(extract_predicate % attributes) (args expr))))
+    (Or? expr) (let [asd (map #(extract_predicate % attributes) (args expr))]
+                 (if (every? not-nil? asd)
+                   (apply Or asd)))
+    :else (if (in_attributes? expr attributes)
+            expr)))
