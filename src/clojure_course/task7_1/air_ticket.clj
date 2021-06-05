@@ -84,9 +84,9 @@
 
 (defn run []
   ;;try to tune timeouts in order to all the customers gain at least one booking
-  (let [f1 (booking-future spec1 "City1" "City3" 0 1),
+  (let [f1 (booking-future spec1 "City1" "City3" 0 10),
         f2 (booking-future spec1 "City1" "City2" 100 1),
-        f3 (booking-future spec1 "City2" "City3" 100 1)]
+        f3 (booking-future spec1 "City2" "City3" 10 10)]
     (print-bookings "City1->City3:" @f1)
     (print-bookings "City1->City2:" @f2)
     (print-bookings "City2->City3:" @f3)
