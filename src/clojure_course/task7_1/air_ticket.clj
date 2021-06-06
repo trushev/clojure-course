@@ -1,5 +1,5 @@
 (ns clojure-course.task7-1.air_ticket
-  (:require [clojure-course.task7-1.air_ticket_util :refer :all]))
+  (:require [clojure-course.task7-1.booking_util :refer :all]))
 
 
 ;;;an empty route map
@@ -45,7 +45,10 @@
     ;;implementation must be pure functional besides the transaction itself, tickets reference modification and
     ;;restarts monitoring (atom could be used for this)
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (search route-map from to)))
+    (let [[price path] (search route-map from to)]
+      (if (= price 0)
+        {:error true}
+        {:path path, :price price}))))
 
 ;;;cities
 (def spec1 (-> empty-map
@@ -80,13 +83,14 @@
 (defn print-bookings [name ft]
   (println (str name ":") (count ft) "bookings")
   (doseq [booking ft]
-    (println "price:" (booking :price) "path:" (booking :path))))
+    (println "price:" (booking :price) "path:" (booking :path)))
+  (println))
 
 (defn run []
-  ;;try to tune timeouts in order to all the customers gain at least one booking
   (let [f1 (booking-future spec1 "City1" "City3" 0 10),
         f2 (booking-future spec1 "City1" "City2" 100 1),
-        f3 (booking-future spec1 "City2" "City3" 10 10)]
+        f3 (booking-future spec1 "City2" "City3" 9 10)]
+    (println)
     (print-bookings "City1->City3:" @f1)
     (print-bookings "City1->City2:" @f2)
     (print-bookings "City2->City3:" @f3)
@@ -95,44 +99,25 @@
     ))
 
 (defn -main []
-  ;(let [route-map
-  ;      (-> empty-map
-  ;          (route "A" "B" 10 1)
-  ;          (route "B" "C" 20 2)
-  ;          (route "C" "B" 35 3))
-  ;      graph
-  ;      (dijkstras-algorithm (init-graph route-map "A"))]
-  ;  (println graph)
-  ;  (println (found-path graph "C")))
+  (println "____________________________________________________________")
   (run)
-  (println "PROGRAM END"))
+  (println "____________________________________________________________"))
 
+; ____________________________________________________________
 ;
-; A ----------> B <------------> C
-;    10/1          20/2    35/3
+; City1->City3:: 3 bookings
+; price: 250 path: [City1 Town1_X TownX_2 City2 Town2_3 City3]
+; price: 250 path: [City1 Town1_X TownX_2 City2 Town2_3 City3]
+; price: 600 path: [City1 Capital City3]
 ;
-; route-map:
-; {
-; 	forward: {
-; 		A: {B: {price: 10, tickets: 1}},
-; 		B: {C: {price: 20, tickets: 2}},
-; 		C: {B: {price: 35, tickets: 3}}
-; 	},
-; 	backward: {
-; 		B: {A: {price: 10, tickets: 1}, C: {price: 35, tickets: 3}},
-; 		C: {B: {price: 20, tickets: 2}}
-; 	}
-; }
+; City1->City2:: 4 bookings
+; price: 450 path: [City1 Capital City2]
+; price: 450 path: [City1 Capital City2]
+; price: 450 path: [City1 Capital City2]
+; price: 450 path: [City1 Capital City2]
 ;
-; dijkstras-algorithm:
-; {
-;   not-visited: {},
-;   visited: {A: 0, B: 10, C: 30},
-;   paths: {A [A], B [A B], C [A B C]}
-;   routes: {
-;     A: {B: 10},
-;     B: {C: 20},
-;     C: {B: 35}
-;   }
-; }
+; City2->City3:: 2 bookings
+; price: 600 path: [City2 Capital City3]
+; price: 600 path: [City2 Capital City3]
 ;
+; ____________________________________________________________

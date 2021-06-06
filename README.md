@@ -18,6 +18,8 @@
 
 6.1 Dining philosophers problem
 
+7.1 Concurrent airline ticket booking implemented with Dijkstra's algorithm and Clojure STM
+
 ### Run tests
     $ lein test
     
